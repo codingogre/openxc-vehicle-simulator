@@ -1,6 +1,7 @@
 import socket
 import threading
 import json
+import datetime, time
 
 class EnablerConnection():
     def __init__(self):
@@ -42,7 +43,8 @@ class EnablerConnection():
             self.connections.append(handler)
 
     def send_measurement(self, name, value, event=None):
-        data = {'name':name,'value':value}
+        now=datetime.datetime.now()
+        data = {'name':name,'timestamp':time.mktime(now.timetuple())*1e3 + now.microsecond/1e3,'value':value}
         if event is not None and event != '':
             data['event'] = event
         self.send(json.dumps(data) + '\x00')
