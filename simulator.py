@@ -161,10 +161,7 @@ def print_time(comment=''):
 def change_ignition_status(state):
     print "Time: {}".format(datetime.datetime.now())
     print 'turning ignition {}'.format(state)
-    if state == IgnitionState.ON:
-        gState.ignition_status = 'start'
-    else:
-        gState.ignition_status = 'stop'
+    gState.ignition_status = state.value
 
 
 def drive():
@@ -189,10 +186,10 @@ def schedule_event(evt):
 
 
 class IgnitionState(Enum):
-    OFF = 0
-    ON = 1
-    RUNNING = 2
-    ACCESSORY = 3
+    OFF = 'off'
+    ON = 'on'
+    RUNNING = 'running'
+    ACCESSORY = 'accessory'
 
 
 if __name__ == '__main__':
@@ -252,4 +249,4 @@ if __name__ == '__main__':
         evt.task.start()
 
 
-    app.run(use_reloader=False, host='0.0.0.0', port=flask_port)
+    app.run(use_reloader=False, host='0.0.0.0', port=flask_port, debug=True)
