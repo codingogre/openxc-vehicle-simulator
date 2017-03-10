@@ -220,6 +220,7 @@ $(function() {
         document.getElementById("gear").innerHTML = dataJSON.transmission_gear_position;
         document.getElementById("engine_speed").innerHTML = (dataJSON.engine_speed).toFixed(0);
         document.getElementById("vehicle_speed").innerHTML = (dataJSON.vehicle_speed).toFixed(2);
+        document.getElementById("vehicle_speed_mph").innerHTML = (dataJSON.vehicle_speed*0.621371).toFixed(2);
         document.getElementById("fuel_consumed").innerHTML = (dataJSON.fuel_consumed_since_restart).toFixed(3);
         document.getElementById("odometer").innerHTML = (dataJSON.odometer).toFixed(3);
         document.getElementById("fuel_level").innerHTML = (dataJSON.fuel_level).toFixed(2);
