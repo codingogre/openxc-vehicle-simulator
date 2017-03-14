@@ -9,12 +9,16 @@ import state_manager
 from threading import Thread, Event, Timer
 import datetime
 from enum import Enum
+import logging
 
 # configuration
 DEBUG = True
 SECRET_KEY = 'development key'
 USERNAME = 'admin'
 PASSWORD = 'default'
+
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 # create our little application :)
 app = Flask(__name__)
@@ -23,6 +27,11 @@ app.config.from_object(__name__)
 # simulator state
 global events
 events = []
+
+global gState, simulation_time, sim_count
+gState = state_manager.StateManager()
+simulation_time = 0
+sim_count = 0
 
 
 def _make_status_response(status):
@@ -167,7 +176,7 @@ def change_ignition_status(state):
 def drive():
     print "Time: {}".format(datetime.datetime.now())
     print 'driving'
-    gState.accelerator_pedal_position = 15
+    gState.accelerator_pedal_position = 100
     gState.brake_pedal_position = 0
 
 
@@ -187,31 +196,26 @@ def schedule_event(evt):
 
 class IgnitionState(Enum):
     OFF = 'off'
-    ON = 'on'
+    START = 'start'
     RUNNING = 'running'
     ACCESSORY = 'accessory'
 
 
-if __name__ == '__main__':
-    flask_port = 50000
-    print('For the UI, navigate a browser to localhost:' + str(flask_port))
-
-    print('Creating headless state manager')
-
-    global gState
-    gState = state_manager.StateManager()
+def run_simulation(iteration):
+    global simulation_time
+    iteration += 1
+    print "Running simulation for iteration #{}".format(iteration)
+    del events[:]
 
     gState.ignition_status = 'off'
-
 
     car_off_action = DriveAction(change_ignition_status, 'ignition off', [IgnitionState.OFF])
     schedule_event(DriveEvent(car_off_action, 0))
 
-
     # Don't start immediately such that we can let the UI initialize
     simulation_time = 10
     # Start the car and sit idle for 5 seconds
-    start_car_action = DriveAction(change_ignition_status, 'begin trip', [IgnitionState.ON])
+    start_car_action = DriveAction(change_ignition_status, 'begin trip', [IgnitionState.START])
     schedule_event(DriveEvent(start_car_action, simulation_time))
     simulation_time += 5
 
@@ -244,9 +248,25 @@ if __name__ == '__main__':
     # Ignition off
     schedule_event(DriveEvent(car_off_action, simulation_time))
 
+    simulation_time += 10
+    schedule_simulation = DriveAction(run_simulation, 'provide another iteration of simulation', [iteration])
+    schedule_event(DriveEvent(schedule_simulation, simulation_time))
+
     # Schedule all timer tasks
     for evt in events:
-        evt.task.start()
+        if (evt.action):
+            evt.task.start()
 
 
+if __name__ == '__main__':
+    # Initialize drive program
+    print('Creating headless state manager')
+
+    drive_thread = Thread(target=run_simulation, args=[sim_count])
+    drive_thread.daemon = True
+    drive_thread.start()
+
+    # Start web app in separate, daemon thread
+    flask_port = 50000
     app.run(use_reloader=False, host='0.0.0.0', port=flask_port, debug=True)
+    print('For the UI, navigate a browser to localhost:' + str(flask_port))

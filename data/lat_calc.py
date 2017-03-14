@@ -7,7 +7,7 @@ class LatCalc(DataCalc):
         self.initialize_data()
 
     def initialize_data(self):
-        self.data = 42.292834
+        self.data = 37.3734274
         self.last_calc = datetime.now()
         #self.earth_radius_km = 6378.1
         self.earth_circumference_km = 40075.0

@@ -7,7 +7,8 @@ class LonCalc(DataCalc):
         self.initialize_data()
 
     def initialize_data(self):
-        self.data = -83.237275
+        #self.data = -83.237275
+        self.data = -121.9854600
         self.last_calc = datetime.now()
         self.earth_circumference_equator_km = 40075.0
         self.km_per_deg_equator = self.earth_circumference_equator_km / 360.0
